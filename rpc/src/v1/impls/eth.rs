@@ -781,7 +781,7 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 		}
 	}
 
-	fn submit_work(&self, nonce: RpcH64, pow_hash: RpcH256, mix_hash: RpcH256) -> Result<bool> {
+	fn submit_work(&self, nonce: RpcH64, pow_hash: RpcH256, mix_hash: RpcH256) -> Result<String> {
 		// TODO [ToDr] Should disallow submissions in case of PoA?
 		let nonce: H64 = nonce.into();
 		let pow_hash: H256 = pow_hash.into();
@@ -793,10 +793,10 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 			.and_then(|block| self.client.import_sealed_block(block));
 
 		match import {
-			Ok(_) => Ok(true),
+			Ok(hash) => Ok(hash.to_string()),
 			Err(err) => {
 				warn!(target: "miner", "Cannot submit work - {:?}.", err);
-				Ok(false)
+				Ok(err.to_string())
 			},
 		}
 	}
