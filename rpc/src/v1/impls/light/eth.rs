@@ -521,7 +521,7 @@ impl<T: LightChainClient + 'static> Eth for EthClient<T> {
 		Err(errors::light_unimplemented(None))
 	}
 
-	fn submit_work(&self, _nonce: RpcH64, _pow_hash: RpcH256, _mix_hash: RpcH256) -> Result<bool> {
+	fn submit_work(&self, _nonce: RpcH64, _pow_hash: RpcH256, _mix_hash: RpcH256) -> Result<String> {
 		Err(errors::light_unimplemented(None))
 	}
 
