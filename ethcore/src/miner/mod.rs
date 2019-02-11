@@ -77,7 +77,7 @@ pub trait MinerService : Send + Sync {
 	/// Get the sealing work package preparing it if doesn't exist yet.
 	///
 	/// Returns `None` if engine seals internally.
-	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256)>
+	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize)>
 		where C: BlockChain + CallContract + BlockProducer + SealedBlockImporter + Nonce + Sync;
 
 	/// Update current pending block

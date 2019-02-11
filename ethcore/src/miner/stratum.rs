@@ -119,7 +119,7 @@ impl JobDispatcher for StratumJobDispatcher {
 	}
 
 	fn job(&self) -> Option<String> {
-		self.with_core(|client, miner| miner.work_package(&*client).map(|(pow_hash, number, _timestamp, difficulty)| {
+		self.with_core(|client, miner| miner.work_package(&*client).map(|(pow_hash, number, _timestamp, difficulty, _parent_hash, _gas_limit, _gas_used, _transactions, _uncles)| {
 			self.payload(pow_hash, difficulty, number)
 		}))
 	}
