@@ -860,7 +860,7 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 			errors::no_work_required()
 		})?;
 
-		let (pow_hash, number, timestamp, difficulty) = work;
+		let (pow_hash, number, timestamp, difficulty, parent_hash, gas_limit, gas_used, transactions, uncles) = work;
 		let target = ethash::difficulty_to_boundary(&difficulty);
 		let seed_hash = self.seed_compute.lock().hash_block_number(number);
 
@@ -873,13 +873,23 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 				seed_hash: seed_hash.into(),
 				target: target.into(),
 				number: Some(number),
+				parent_hash: parent_hash.into(),
+				gas_limit: gas_limit,
+				gas_used: gas_used,
+				transactions: transactions,
+				uncles: uncles,
 			})
 		} else {
 			Ok(Work {
 				pow_hash: pow_hash.into(),
 				seed_hash: seed_hash.into(),
 				target: target.into(),
-				number: None
+				number: None,
+				parent_hash: parent_hash.into(),
+				gas_limit: gas_limit,
+				gas_used: gas_used,
+				transactions: transactions,
+				uncles: uncles,
 			})
 		}
 	}
