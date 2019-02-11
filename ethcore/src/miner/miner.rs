@@ -1170,7 +1170,7 @@ impl miner::MinerService for Miner {
 		self.sealing.lock().enabled
 	}
 
-	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256)> where
+	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize)> where
 		C: BlockChain + CallContract + BlockProducer + SealedBlockImporter + Nonce + Sync,
 	{
 		if self.engine.seals_internally().is_some() {
@@ -1181,7 +1181,7 @@ impl miner::MinerService for Miner {
 
 		self.sealing.lock().queue.use_last_ref().map(|b| {
 			let header = b.header();
-			(header.hash(), header.number(), header.timestamp(), *header.difficulty())
+			(header.hash(), header.number(), header.timestamp(), *header.difficulty(), *header.parent_hash(), u64::from(*header.gas_limit()), u64::from(*header.gas_used()), b.transactions().len(), b.uncles().len(),)
 		})
 	}
 
