@@ -189,13 +189,13 @@ impl MinerService for TestMinerService {
 		unimplemented!();
 	}
 
-	fn work_package<C: PrepareOpenBlock>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256)> {
+	fn work_package<C: PrepareOpenBlock>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize)> {
 		let params = self.authoring_params();
 		let open_block = chain.prepare_open_block(params.author, params.gas_range_target, params.extra_data).unwrap();
 		let closed = open_block.close().unwrap();
 		let header = &closed.header;
 
-		Some((header.hash(), header.number(), header.timestamp(), *header.difficulty()))
+		Some((header.hash(), header.number(), header.timestamp(), *header.difficulty(), *header.parent_hash(), u64::from(*header.gas_limit()), u64::from(*header.gas_used()), closed.transactions().len(), closed.uncles().len()))
 	}
 
 	fn transaction(&self, hash: &H256) -> Option<Arc<VerifiedTransaction>> {
