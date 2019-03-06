@@ -210,7 +210,7 @@ pub trait Parity {
 	/// Used for submitting a proof-of-work solution (similar to `eth_submitWork`,
 	/// but returns block hash on success, and returns an explicit error message on failure).
 	#[rpc(name = "parity_submitWorkDetail")]
-	fn submit_work_detail(&self, H64, H256, H256) -> Result<H256>;
+	fn submit_work_detail(&self, H64, H256, H256, Option<u32>) -> Result<H256>;
 
 	/// Returns the status of the node. Used as the health endpoint.
 	///

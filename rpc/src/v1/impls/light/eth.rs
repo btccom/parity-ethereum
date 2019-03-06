@@ -528,7 +528,7 @@ where
 		Err(errors::light_unimplemented(None))
 	}
 
-	fn submit_work(&self, _nonce: RpcH64, _pow_hash: RpcH256, _mix_hash: RpcH256) -> Result<bool> {
+	fn submit_work(&self, _nonce: RpcH64, _pow_hash: RpcH256, _mix_hash: RpcH256, _extra_nonce: Option<u32>) -> Result<bool> {
 		Err(errors::light_unimplemented(None))
 	}
 

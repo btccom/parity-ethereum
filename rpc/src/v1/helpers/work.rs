@@ -26,14 +26,17 @@ use v1::types::{H64, H256};
 use v1::helpers::errors;
 
 // Submit a POW work and return the block's hash
-pub fn submit_work_detail<C: BlockChainClient, M: MinerService>(client: &Arc<C>, miner: &Arc<M>, nonce: H64, pow_hash: H256, mix_hash: H256) -> Result<H256, Error> {
+pub fn submit_work_detail<C: BlockChainClient, M: MinerService>(client: &Arc<C>, miner: &Arc<M>, nonce: H64, pow_hash: H256, mix_hash: H256, extra_nonce: Option<u32>) -> Result<H256, Error> {
 	// TODO [ToDr] Should disallow submissions in case of PoA?
 	let nonce: EthcoreH64 = nonce.into();
 	let pow_hash: EthcoreH256 = pow_hash.into();
 	let mix_hash: EthcoreH256 = mix_hash.into();
-	trace!(target: "miner", "submit_work_detail: Decoded: nonce={}, pow_hash={}, mix_hash={}", nonce, pow_hash, mix_hash);
+	match extra_nonce {
+		Some(x) => trace!(target: "miner", "submit_work_detail: Decoded: nonce={}, pow_hash={}, mix_hash={}, extra_nonce={}", nonce, pow_hash, mix_hash, x),
+		None => trace!(target: "miner", "submit_work_detail: Decoded: nonce={}, pow_hash={}, mix_hash={}", nonce, pow_hash, mix_hash),
+	}
 	let seal = vec![rlp::encode(&mix_hash), rlp::encode(&nonce)];
-	let import = miner.submit_seal(pow_hash, seal)
+	let import = miner.submit_seal(pow_hash, seal, extra_nonce)
 		.and_then(|block| client.import_sealed_block(block));
 	match import {
 		Ok(hash) => {

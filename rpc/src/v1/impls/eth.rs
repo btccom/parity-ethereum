@@ -865,7 +865,7 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 			errors::no_work_required()
 		})?;
 
-		let (pow_hash, number, timestamp, difficulty, parent_hash, gas_limit, gas_used, transactions, uncles) = work;
+		let (pow_hash, number, timestamp, difficulty, parent_hash, gas_limit, gas_used, transactions, uncles, encoded) = work;
 		let target = ethash::difficulty_to_boundary(&difficulty);
 		let seed_hash = self.seed_compute.lock().hash_block_number(number);
 
@@ -883,6 +883,7 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 				gas_used: gas_used,
 				transactions: transactions,
 				uncles: uncles,
+				encoded: encoded,
 			})
 		} else {
 			Ok(Work {
@@ -895,12 +896,13 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 				gas_used: gas_used,
 				transactions: transactions,
 				uncles: uncles,
+				encoded: encoded,
 			})
 		}
 	}
 
-	fn submit_work(&self, nonce: RpcH64, pow_hash: RpcH256, mix_hash: RpcH256) -> Result<bool> {
-		match helpers::submit_work_detail(&self.client, &self.miner, nonce, pow_hash, mix_hash) {
+	fn submit_work(&self, nonce: RpcH64, pow_hash: RpcH256, mix_hash: RpcH256, extra_nonce: Option<u32>) -> Result<bool> {
+		match helpers::submit_work_detail(&self.client, &self.miner, nonce, pow_hash, mix_hash, extra_nonce.into()) {
 			Ok(_)  => Ok(true),
 			Err(_) => Ok(false),
 		}
