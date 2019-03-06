@@ -71,7 +71,7 @@ pub trait MinerService : Send + Sync {
 
 	/// Submit `seal` as a valid solution for the header of `pow_hash`.
 	/// Will check the seal, but not actually insert the block into the chain.
-	fn submit_seal(&self, pow_hash: H256, seal: Vec<Bytes>) -> Result<SealedBlock, Error>;
+	fn submit_seal(&self, pow_hash: H256, seal: Vec<Bytes>, extra_nonce: Option<u32>) -> Result<SealedBlock, Error>;
 
 	/// Is it currently sealing?
 	fn is_currently_sealing(&self) -> bool;
@@ -79,7 +79,7 @@ pub trait MinerService : Send + Sync {
 	/// Get the sealing work package preparing it if doesn't exist yet.
 	///
 	/// Returns `None` if engine seals internally.
-	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize)>
+	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize, Bytes)>
 		where C: BlockChain + CallContract + BlockProducer + SealedBlockImporter + Nonce + Sync;
 
 	/// Update current pending block

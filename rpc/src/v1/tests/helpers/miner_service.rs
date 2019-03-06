@@ -190,13 +190,23 @@ impl MinerService for TestMinerService {
 		unimplemented!();
 	}
 
-	fn work_package<C: PrepareOpenBlock>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize)> {
+	fn work_package<C: PrepareOpenBlock>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize, Bytes)> {
 		let params = self.authoring_params();
 		let open_block = chain.prepare_open_block(params.author, params.gas_range_target, params.extra_data).unwrap();
 		let closed = open_block.close().unwrap();
 		let header = &closed.header;
 
-		Some((header.hash(), header.number(), header.timestamp(), *header.difficulty(), *header.parent_hash(), u64::from(*header.gas_limit()), u64::from(*header.gas_used()), closed.transactions().len(), closed.uncles().len()))
+		Some((
+			header.hash(),
+			header.number(),
+			header.timestamp(),
+			*header.difficulty(),
+			*header.parent_hash(),
+			u64::from(*header.gas_limit()),
+			u64::from(*header.gas_used()),
+			closed.transactions.len(),
+			closed.uncles.len(),
+			rlp::encode(header)))
 	}
 
 	fn transaction(&self, hash: &H256) -> Option<Arc<VerifiedTransaction>> {
@@ -272,7 +282,7 @@ impl MinerService for TestMinerService {
 
 	/// Submit `seal` as a valid solution for the header of `pow_hash`.
 	/// Will check the seal, but not actually insert the block into the chain.
-	fn submit_seal(&self, _pow_hash: H256, _seal: Vec<Bytes>) -> Result<SealedBlock, Error> {
+	fn submit_seal(&self, _pow_hash: H256, _seal: Vec<Bytes>, _extra_nonce: Option<u32>) -> Result<SealedBlock, Error> {
 		unimplemented!();
 	}
 
