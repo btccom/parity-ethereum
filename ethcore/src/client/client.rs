@@ -2456,8 +2456,8 @@ impl super::traits::EngineClient for Client {
 		self.importer.miner.update_sealing(self)
 	}
 
-	fn submit_seal(&self, block_hash: H256, seal: Vec<Bytes>) {
-		let import = self.importer.miner.submit_seal(block_hash, seal).and_then(|block| self.import_sealed_block(block));
+	fn submit_seal(&self, block_hash: H256, seal: Vec<Bytes>, extra_nonce: Option<u32>) {
+		let import = self.importer.miner.submit_seal(block_hash, seal, extra_nonce).and_then(|block| self.import_sealed_block(block));
 		if let Err(err) = import {
 			warn!(target: "poa", "Wrong internal seal submission! {:?}", err);
 		}

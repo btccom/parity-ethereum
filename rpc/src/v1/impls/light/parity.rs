@@ -374,7 +374,7 @@ where
 		Err(errors::light_unimplemented(None))
 	}
 
-	fn submit_work_detail(&self, _nonce: H64, _pow_hash: H256, _mix_hash: H256) -> Result<H256> {
+	fn submit_work_detail(&self, _nonce: H64, _pow_hash: H256, _mix_hash: H256, _extra_nonce: Option<u32>) -> Result<H256> {
 		Err(errors::light_unimplemented(None))
 	}
 
