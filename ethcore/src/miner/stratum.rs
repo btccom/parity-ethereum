@@ -119,7 +119,7 @@ impl JobDispatcher for StratumJobDispatcher {
 	}
 
 	fn job(&self) -> Option<String> {
-		self.with_core(|client, miner| miner.work_package(&*client).map(|(pow_hash, number, _timestamp, difficulty, _parent_hash, _gas_limit, _gas_used, _transactions, _uncles)| {
+		self.with_core(|client, miner| miner.work_package(&*client).map(|(pow_hash, number, _timestamp, difficulty, _parent_hash, _gas_limit, _gas_used, _transactions, _uncles, _encoded)| {
 			self.payload(pow_hash, difficulty, number)
 		}))
 	}
@@ -140,7 +140,7 @@ impl JobDispatcher for StratumJobDispatcher {
 		self.with_core_result(|client, miner| {
 			let seal = vec![encode(&payload.mix_hash), encode(&payload.nonce)];
 
-			let import = miner.submit_seal(payload.pow_hash, seal)
+			let import = miner.submit_seal(payload.pow_hash, seal, None)
 				.and_then(|block| client.import_sealed_block(block));
 			match import {
 				Ok(_) => Ok(()),

@@ -1185,7 +1185,7 @@ impl miner::MinerService for Miner {
 		self.sealing.lock().enabled
 	}
 
-	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize)> where
+	fn work_package<C>(&self, chain: &C) -> Option<(H256, BlockNumber, u64, U256, H256, u64, u64, usize, usize, Bytes)> where
 		C: BlockChain + CallContract + BlockProducer + SealedBlockImporter + Nonce + Sync,
 	{
 		if self.engine.seals_internally().is_some() {
@@ -1196,12 +1196,27 @@ impl miner::MinerService for Miner {
 
 		self.sealing.lock().queue.use_last_ref().map(|b| {
 			let header = &b.header;
-			(header.hash(), header.number(), header.timestamp(), *header.difficulty(), *header.parent_hash(), u64::from(*header.gas_limit()), u64::from(*header.gas_used()), b.transactions.len(), b.uncles.len())
+			let mut pending = header.clone();
+			let mut extra_data = header.extra_data().clone();
+			extra_data.extend_from_slice(&[0; 4]);
+			pending.set_extra_data(extra_data);
+			(
+				header.hash(),
+				header.number(),
+				header.timestamp(),
+				*header.difficulty(),
+				*header.parent_hash(),
+				u64::from(*header.gas_limit()),
+				u64::from(*header.gas_used()),
+				b.transactions.len(),
+				b.uncles.len(),
+				rlp::encode(&pending),
+			)
 		})
 	}
 
 	// Note used for external submission (PoW) and internally by sealing engines.
-	fn submit_seal(&self, block_hash: H256, seal: Vec<Bytes>) -> Result<SealedBlock, Error> {
+	fn submit_seal(&self, block_hash: H256, seal: Vec<Bytes>, extra_nonce: Option<u32>) -> Result<SealedBlock, Error> {
 		let result =
 			if let Some(b) = self.sealing.lock().queue.get_used_if(
 				if self.options.enable_resubmission {
@@ -1212,7 +1227,7 @@ impl miner::MinerService for Miner {
 				|b| &b.header.bare_hash() == &block_hash
 			) {
 				trace!(target: "miner", "Submitted block {}={} with seal {:?}", block_hash, b.header.bare_hash(), seal);
-				b.lock().try_seal(&*self.engine, seal).or_else(|e| {
+				b.lock().try_seal(&*self.engine, seal, extra_nonce).or_else(|e| {
 					warn!(target: "miner", "Mined solution rejected: {}", e);
 					Err(ErrorKind::PowInvalid.into())
 				})
@@ -1393,7 +1408,7 @@ mod tests {
 
 		let res = miner.work_package(&client);
 		let hash = res.unwrap().0;
-		let block = miner.submit_seal(hash, vec![]).unwrap();
+		let block = miner.submit_seal(hash, vec![], None).unwrap();
 		client.import_sealed_block(block).unwrap();
 
 		// two more blocks mined, work requested.
@@ -1404,7 +1419,7 @@ mod tests {
 		miner.work_package(&client);
 
 		// solution to original work submitted.
-		assert!(miner.submit_seal(hash, vec![]).is_ok());
+		assert!(miner.submit_seal(hash, vec![], None).is_ok());
 	}
 
 	fn miner() -> Miner {
