@@ -180,7 +180,7 @@ pub trait Eth {
 
 	/// Used for submitting a proof-of-work solution.
 	#[rpc(name = "eth_submitWork")]
-	fn submit_work(&self, H64, H256, H256) -> Result<bool>;
+	fn submit_work(&self, H64, H256, H256, Option<u32>) -> Result<bool>;
 
 	/// Used for submitting mining hashrate.
 	#[rpc(name = "eth_submitHashrate")]

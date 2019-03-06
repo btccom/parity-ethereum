@@ -443,8 +443,8 @@ impl<C, M, U, S> Parity for ParityClient<C, M, U> where
 				.map_err(errors::call)
 	}
 
-	fn submit_work_detail(&self, nonce: H64, pow_hash: H256, mix_hash: H256) -> Result<H256> {
-		helpers::submit_work_detail(&self.client, &self.miner, nonce, pow_hash, mix_hash)
+	fn submit_work_detail(&self, nonce: H64, pow_hash: H256, mix_hash: H256, extra_nonce: Option<u32>) -> Result<H256> {
+		helpers::submit_work_detail(&self.client, &self.miner, nonce, pow_hash, mix_hash, extra_nonce.into())
 	}
 
 	fn status(&self) -> Result<()> {
