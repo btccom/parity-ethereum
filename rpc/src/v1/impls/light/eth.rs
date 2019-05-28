@@ -44,7 +44,7 @@ use v1::helpers::light_fetch::{self, LightFetch};
 use v1::traits::Eth;
 use v1::types::{
 	RichBlock, Block, BlockTransactions, BlockNumber, LightBlockNumber, Bytes, SyncStatus as RpcSyncStatus,
-	SyncInfo as RpcSyncInfo, Transaction, CallRequest, Index, Filter, Log, Receipt, Work, EthAccount
+	SyncInfo as RpcSyncInfo, Transaction, CallRequest, Index, Filter, Log, Receipt, Work, EthAccount, ExtraNonce,
 };
 use v1::metadata::Metadata;
 
@@ -521,7 +521,7 @@ where
 		Err(errors::light_unimplemented(None))
 	}
 
-	fn submit_work(&self, _nonce: H64, _pow_hash: H256, _mix_hash: H256, _extra_nonce: Option<u32>) -> Result<bool> {
+	fn submit_work(&self, _nonce: H64, _pow_hash: H256, _mix_hash: H256, _extra_nonce: Option<ExtraNonce>) -> Result<bool> {
 		Err(errors::light_unimplemented(None))
 	}
 
