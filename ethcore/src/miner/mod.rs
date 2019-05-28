@@ -71,7 +71,7 @@ pub trait MinerService : Send + Sync {
 
 	/// Submit `seal` as a valid solution for the header of `pow_hash`.
 	/// Will check the seal, but not actually insert the block into the chain.
-	fn submit_seal(&self, pow_hash: H256, seal: Vec<Bytes>, extra_nonce: Option<u32>) -> Result<SealedBlock, Error>;
+	fn submit_seal(&self, pow_hash: H256, seal: Vec<Bytes>, extra_nonce: Bytes) -> Result<SealedBlock, Error>;
 
 	/// Is it currently sealing?
 	fn is_currently_sealing(&self) -> bool;
