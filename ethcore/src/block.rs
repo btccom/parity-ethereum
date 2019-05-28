@@ -35,7 +35,6 @@ use std::{cmp, ops};
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use byteorder::{ByteOrder, BigEndian};
 use bytes::Bytes;
 use ethereum_types::{H256, U256, Address, Bloom};
 
@@ -432,19 +431,12 @@ impl LockedBlock {
 		self,
 		engine: &EthEngine,
 		seal: Vec<Bytes>,
-		extra_nonce: Option<u32>,
+		extra_nonce: Bytes,
 	) -> Result<SealedBlock, Error> {
 		let mut s = self;
-		match extra_nonce {
-			Some(x) => {
-				let mut extra_data = s.block.header.extra_data().clone();
-				let mut buf = [0; 4];
-				BigEndian::write_u32(&mut buf, x);
-				extra_data.extend_from_slice(&buf);
-				s.block.header.set_extra_data(extra_data);
-			},
-			None => {},
-		}
+		let mut extra_data = s.block.header.extra_data().clone();
+		extra_data.extend_from_slice(&extra_nonce);
+		s.block.header.set_extra_data(extra_data);
 		s.block.header.set_seal(seal);
 		s.block.header.compute_hash();
 

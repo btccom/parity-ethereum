@@ -9,6 +9,7 @@ authors = ["Parity Technologies <admin@parity.io>"]
 
 [dependencies]
 ansi_term = "0.10"
+byteorder = "1.0"
 cid = "0.3"
 futures = "0.1.6"
 log = "0.4"
