@@ -22,6 +22,7 @@
 extern crate futures;
 
 extern crate ansi_term;
+extern crate byteorder;
 extern crate cid;
 extern crate itertools;
 extern crate multihash;

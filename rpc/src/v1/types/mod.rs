@@ -27,6 +27,7 @@ mod call_request;
 mod confirmations;
 mod consensus_status;
 mod derivation;
+mod extra_nonce;
 mod filter;
 mod histogram;
 mod index;
@@ -60,6 +61,7 @@ pub use self::confirmations::{
 };
 pub use self::consensus_status::*;
 pub use self::derivation::{DeriveHash, DeriveHierarchical, Derive};
+pub use self::extra_nonce::ExtraNonce;
 pub use self::filter::{Filter, FilterChanges};
 pub use self::histogram::Histogram;
 pub use self::index::Index;
