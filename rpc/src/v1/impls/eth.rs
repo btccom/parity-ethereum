@@ -48,7 +48,7 @@ use v1::traits::Eth;
 use v1::types::{
 	RichBlock, Block, BlockTransactions, BlockNumber, Bytes, SyncStatus, SyncInfo,
 	Transaction, CallRequest, Index, Filter, Log, Receipt, Work, EthAccount, StorageProof,
-	block_number_to_id
+	block_number_to_id, ExtraNonce,
 };
 use v1::metadata::Metadata;
 
@@ -916,7 +916,7 @@ impl<C, SN: ?Sized, S: ?Sized, M, EM, T: StateInfo + 'static> Eth for EthClient<
 		}
 	}
 
-	fn submit_work(&self, nonce: H64, pow_hash: H256, mix_hash: H256, extra_nonce: Option<u32>) -> Result<bool> {
+	fn submit_work(&self, nonce: H64, pow_hash: H256, mix_hash: H256, extra_nonce: Option<ExtraNonce>) -> Result<bool> {
 		match helpers::submit_work_detail(&self.client, &self.miner, nonce, pow_hash, mix_hash, extra_nonce.into()) {
 			Ok(_)  => Ok(true),
 			Err(_) => Ok(false),

@@ -20,7 +20,7 @@ use jsonrpc_derive::rpc;
 use ethereum_types::{H64, H160, H256, U64, U256};
 
 use v1::types::{RichBlock, BlockNumber, Bytes, CallRequest, Filter, FilterChanges, Index, EthAccount};
-use v1::types::{Log, Receipt, SyncStatus, Transaction, Work};
+use v1::types::{Log, Receipt, SyncStatus, Transaction, Work, ExtraNonce};
 
 /// Eth rpc interface.
 #[rpc(server)]
@@ -180,7 +180,7 @@ pub trait Eth {
 
 	/// Used for submitting a proof-of-work solution.
 	#[rpc(name = "eth_submitWork")]
-	fn submit_work(&self, _: H64, _: H256, _: H256, _: Option<u32>) -> Result<bool>;
+	fn submit_work(&self, _: H64, _: H256, _: H256, _: Option<ExtraNonce>) -> Result<bool>;
 
 	/// Used for submitting mining hashrate.
 	#[rpc(name = "eth_submitHashrate")]

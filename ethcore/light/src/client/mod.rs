@@ -18,6 +18,7 @@
 
 use std::sync::{Weak, Arc};
 
+use bytes::Bytes;
 use ethcore::client::{ClientReport, EnvInfo, ClientIoMessage, traits::ForceUpdateSealing};
 use ethcore::engines::{epoch, EthEngine, EpochChange, EpochTransition, Proof};
 use ethcore::machine::EthereumMachine;
@@ -621,7 +622,7 @@ impl<T: ChainDataFetcher> ::ethcore::client::ChainInfo for Client<T> {
 
 impl<T: ChainDataFetcher> ::ethcore::client::EngineClient for Client<T> {
 	fn update_sealing(&self, _force: ForceUpdateSealing) {}
-	fn submit_seal(&self, _block_hash: H256, _seal: Vec<Vec<u8>>, _extra_nonce: Option<u32>) { }
+	fn submit_seal(&self, _block_hash: H256, _seal: Vec<Vec<u8>>, _extra_nonce: Bytes) { }
 	fn broadcast_consensus_message(&self, _message: Vec<u8>) { }
 
 	fn epoch_transition_for(&self, parent_hash: H256) -> Option<EpochTransition> {

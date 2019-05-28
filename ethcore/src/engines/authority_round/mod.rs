@@ -1644,14 +1644,14 @@ mod tests {
 
 		engine.set_signer(Box::new((tap.clone(), addr1, "1".into())));
 		if let Seal::Regular(seal) = engine.generate_seal(&b1, &genesis_header) {
-			assert!(b1.clone().try_seal(engine, seal, None).is_ok());
+			assert!(b1.clone().try_seal(engine, seal, vec![]).is_ok());
 			// Second proposal is forbidden.
 			assert!(engine.generate_seal(&b1, &genesis_header) == Seal::None);
 		}
 
 		engine.set_signer(Box::new((tap, addr2, "2".into())));
 		if let Seal::Regular(seal) = engine.generate_seal(&b2, &genesis_header) {
-			assert!(b2.clone().try_seal(engine, seal, None).is_ok());
+			assert!(b2.clone().try_seal(engine, seal, vec![]).is_ok());
 			// Second proposal is forbidden.
 			assert!(engine.generate_seal(&b2, &genesis_header) == Seal::None);
 		}

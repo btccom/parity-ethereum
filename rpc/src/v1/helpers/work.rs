@@ -23,16 +23,17 @@ use ethcore::miner::{BlockChainClient, MinerService};
 use ethereum_types::{H64, H256};
 use jsonrpc_core::Error;
 use v1::helpers::errors;
+use v1::types::ExtraNonce;
 
 // Submit a POW work and return the block's hash
-pub fn submit_work_detail<C: BlockChainClient, M: MinerService>(client: &Arc<C>, miner: &Arc<M>, nonce: H64, pow_hash: H256, mix_hash: H256, extra_nonce: Option<u32>) -> Result<H256, Error> {
+pub fn submit_work_detail<C: BlockChainClient, M: MinerService>(client: &Arc<C>, miner: &Arc<M>, nonce: H64, pow_hash: H256, mix_hash: H256, extra_nonce: Option<ExtraNonce>) -> Result<H256, Error> {
 	// TODO [ToDr] Should disallow submissions in case of PoA?
 	match extra_nonce {
-		Some(x) => trace!(target: "miner", "submit_work_detail: Decoded: nonce={}, pow_hash={}, mix_hash={}, extra_nonce={}", nonce, pow_hash, mix_hash, x),
+		Some(ref x) => trace!(target: "miner", "submit_work_detail: Decoded: nonce={}, pow_hash={}, mix_hash={}, extra_nonce={}", nonce, pow_hash, mix_hash, x),
 		None => trace!(target: "miner", "submit_work_detail: Decoded: nonce={}, pow_hash={}, mix_hash={}", nonce, pow_hash, mix_hash),
 	}
 	let seal = vec![rlp::encode(&mix_hash), rlp::encode(&nonce)];
-	miner.submit_seal(pow_hash, seal, extra_nonce)
+	miner.submit_seal(pow_hash, seal, extra_nonce.map_or(vec![], |n| n.to_vec()))
 		.and_then(|block| client.import_sealed_block(block))
 		.map_err(|e| {
 			warn!(target: "miner", "Cannot submit work - {:?}.", e);

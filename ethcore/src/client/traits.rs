@@ -438,7 +438,7 @@ pub trait EngineClient: Sync + Send + ChainInfo {
 	fn update_sealing(&self, force: ForceUpdateSealing);
 
 	/// Submit a seal for a block in the mining queue.
-	fn submit_seal(&self, block_hash: H256, seal: Vec<Bytes>, extra_nonce: Option<u32>);
+	fn submit_seal(&self, block_hash: H256, seal: Vec<Bytes>, extra_nonce: Bytes);
 
 	/// Broadcast a consensus message to the network.
 	fn broadcast_consensus_message(&self, message: Bytes);

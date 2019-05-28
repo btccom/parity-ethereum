@@ -282,7 +282,7 @@ impl MinerService for TestMinerService {
 
 	/// Submit `seal` as a valid solution for the header of `pow_hash`.
 	/// Will check the seal, but not actually insert the block into the chain.
-	fn submit_seal(&self, _pow_hash: H256, _seal: Vec<Bytes>, _extra_nonce: Option<u32>) -> Result<SealedBlock, Error> {
+	fn submit_seal(&self, _pow_hash: H256, _seal: Vec<Bytes>, _extra_nonce: Bytes) -> Result<SealedBlock, Error> {
 		unimplemented!();
 	}
 
