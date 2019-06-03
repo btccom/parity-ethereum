@@ -194,6 +194,10 @@ impl MinerService for TestMinerService {
 		let open_block = chain.prepare_open_block(params.author, params.gas_range_target, params.extra_data).unwrap();
 		let closed = open_block.close().unwrap();
 		let header = &closed.header;
+		let mut extened_header = header.clone();
+		let mut extra_data = extened_header.extra_data().clone();
+		extra_data.extend_from_slice(&[0; 4]);
+		extened_header.set_extra_data(extra_data);
 
 		Some((
 			header.hash(),
@@ -205,7 +209,7 @@ impl MinerService for TestMinerService {
 			u64::from(*header.gas_used()),
 			closed.transactions.len(),
 			closed.uncles.len(),
-			rlp::encode(header)))
+			rlp::encode(&extened_header)))
 	}
 
 	fn transaction(&self, hash: &H256) -> Option<Arc<VerifiedTransaction>> {
