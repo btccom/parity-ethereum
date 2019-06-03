@@ -1205,6 +1205,10 @@ impl miner::MinerService for Miner {
 
 		self.sealing.lock().queue.use_last_ref().map(|b| {
 			let header = &b.header;
+			let mut extened_header = header.clone();
+			let mut extra_data = extened_header.extra_data().clone();
+			extra_data.extend_from_slice(&[0; 4]);
+			extened_header.set_extra_data(extra_data);
 			(
 				header.hash(),
 				header.number(),
@@ -1215,7 +1219,7 @@ impl miner::MinerService for Miner {
 				u64::from(*header.gas_used()),
 				b.transactions.len(),
 				b.uncles.len(),
-				rlp::encode(header),
+				rlp::encode(&extened_header),
 			)
 		})
 	}
