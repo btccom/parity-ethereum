@@ -2463,14 +2463,6 @@ impl ImportSealedBlock for Client {
 			route
 		};
 		let route = ChainRoute::from([route].as_ref());
-		self.importer.miner.chain_new_blocks(
-			self,
-			&[hash],
-			&[],
-			route.enacted(),
-			route.retracted(),
-			self.engine.seals_internally().is_some(),
-		);
 		self.notify(|notify| {
 			notify.new_blocks(
 				NewBlocks::new(
@@ -2484,6 +2476,14 @@ impl ImportSealedBlock for Client {
 				)
 			);
 		});
+		self.importer.miner.chain_new_blocks(
+			self,
+			&[hash],
+			&[],
+			route.enacted(),
+			route.retracted(),
+			self.engine.seals_internally().is_some(),
+		);
 		self.db.read().key_value().flush().expect("DB flush failed.");
 		Ok(hash)
 	}
