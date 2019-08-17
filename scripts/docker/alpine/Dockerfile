@@ -1,4 +1,4 @@
-FROM alpine:edge AS builder
+FROM alpine:3.10 AS builder
 
 # show backtraces
 ENV RUST_BACKTRACE 1
@@ -18,7 +18,7 @@ RUN cargo build --release --target x86_64-alpine-linux-musl --verbose
 RUN strip target/x86_64-alpine-linux-musl/release/parity
 
 
-FROM alpine:edge
+FROM alpine:3.10
 
 # show backtraces
 ENV RUST_BACKTRACE 1
