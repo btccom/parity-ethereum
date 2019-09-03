@@ -58,6 +58,7 @@ use executed::ExecutionError;
 use executive::contract_address;
 use spec::Spec;
 use state::State;
+use rlp::Encodable;
 
 /// Different possible definitions for pending transaction set.
 #[derive(Debug, PartialEq)]
@@ -733,7 +734,10 @@ impl Miner {
 	/// Prepares work which has to be done to seal.
 	fn prepare_work(&self, block: ClosedBlock, original_work_hash: Option<H256>) {
 		let (work, is_new) = {
-			let block_header = block.header.clone();
+			let mut block_header = block.header.clone();
+			let mut extra_data = block_header.extra_data().clone();
+			extra_data.extend_from_slice(&[0; 4]);
+			block_header.set_extra_data(extra_data);
 			let block_hash = block_header.hash();
 
 			let mut sealing = self.sealing.lock();
@@ -752,6 +756,8 @@ impl Miner {
 					block_hash
 				);
 				let is_new = original_work_hash.map_or(true, |h| h != block_hash);
+				let uncles = block.uncles.len();
+				let transactions = block.transactions.len();
 
 				sealing.queue.set_pending(block);
 
@@ -763,7 +769,17 @@ impl Miner {
 					}
 				}
 
-				(Some((block_hash, *block_header.difficulty(), block_header.number())), is_new)
+				(Some((
+					block_hash,
+					*block_header.difficulty(),
+					block_header.number(),
+					*block_header.parent_hash(),
+					u64::from(*block_header.gas_limit()),
+					u64::from(*block_header.gas_used()),
+					uncles,
+					transactions,
+					rlp::encode(&block_header),
+				)), is_new)
 			} else {
 				(None, false)
 			};
@@ -778,9 +794,9 @@ impl Miner {
 		#[cfg(feature = "work-notify")]
 		{
 			if is_new {
-				work.map(|(pow_hash, difficulty, number)| {
+				work.map(|(pow_hash, difficulty, number, parent_hash, gas_limit, gas_used, uncles, transactions, encoded)| {
 					for notifier in self.listeners.read().iter() {
-						notifier.notify(pow_hash, difficulty, number)
+						notifier.notify(pow_hash, difficulty, number, parent_hash, gas_limit, gas_used, uncles, transactions, &encoded)
 					}
 				});
 			}
@@ -1728,7 +1744,7 @@ mod tests {
 		struct DummyNotifyWork;
 
 		impl NotifyWork for DummyNotifyWork {
-			fn notify(&self, _pow_hash: H256, _difficulty: U256, _number: u64) { }
+			fn notify(&self, _pow_hash: H256, _difficulty: U256, _number: u64, _parent_hash: H256, _gas_limit: u64, _gas_used: u64, _uncles:usize, _transactions: usize, _encoded: &Vec<u8>) { }
 		}
 
 		let spec = Spec::new_test();

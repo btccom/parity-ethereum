@@ -36,7 +36,7 @@ use futures::Future;
 /// Trait for notifying about new mining work
 pub trait NotifyWork : Send + Sync {
 	/// Fired when new mining job available
-	fn notify(&self, pow_hash: H256, difficulty: U256, number: u64);
+	fn notify(&self, pow_hash: H256, difficulty: U256, number: u64, parent_hash: H256, gas_limit: u64, gas_used: u64, uncles:usize, transactions: usize, encoded: &Vec<u8>);
 }
 
 /// POSTs info about new work to given urls.
@@ -69,7 +69,7 @@ impl WorkPoster {
 }
 
 impl NotifyWork for WorkPoster {
-	fn notify(&self, pow_hash: H256, difficulty: U256, number: u64) {
+	fn notify(&self, pow_hash: H256, difficulty: U256, number: u64, _parent_hash: H256, _gas_limit: u64, _gas_used: u64, _uncles:usize, _transactions: usize, _encoded: &Vec<u8>) {
 		// TODO: move this to engine
 		let target = ethash::difficulty_to_boundary(&difficulty);
 		let seed_hash = &self.seed_compute.lock().hash_block_number(number);
