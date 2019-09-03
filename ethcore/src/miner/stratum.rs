@@ -212,7 +212,7 @@ impl From<AddrParseError> for Error {
 
 #[cfg(feature = "work-notify")]
 impl NotifyWork for Stratum {
-	fn notify(&self, pow_hash: H256, difficulty: U256, number: u64) {
+	fn notify(&self, pow_hash: H256, difficulty: U256, number: u64, _parent_hash: H256, _gas_limit: u64, _gas_used: u64, _uncles:usize, _transactions: usize, _encoded: &Vec<u8>) {
 		trace!(target: "stratum", "Notify work");
 
 		self.service.push_work_all(
