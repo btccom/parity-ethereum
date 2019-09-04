@@ -30,10 +30,11 @@ use v1::traits::EthPubSub;
 use v1::types::{pubsub, RichHeader, Log};
 
 use ethcore::client::{BlockChainClient, ChainNotify, NewBlocks, ChainRouteType, BlockId};
-use ethereum_types::H256;
+use ethereum_types::{H256, U256};
 use light::cache::Cache;
 use light::client::{LightChainClient, LightChainNotify};
 use light::on_demand::OnDemandRequester;
+use miner::work_notify::NotifyWork;
 use parity_runtime::Executor;
 use parking_lot::{RwLock, Mutex};
 
@@ -50,6 +51,7 @@ pub struct EthPubSubClient<C> {
 	heads_subscribers: Arc<RwLock<Subscribers<Client>>>,
 	logs_subscribers: Arc<RwLock<Subscribers<(Client, EthFilter)>>>,
 	transactions_subscribers: Arc<RwLock<Subscribers<Client>>>,
+	works_subscribers: Arc<RwLock<Subscribers<Client>>>,
 }
 
 impl<C> EthPubSubClient<C> {
@@ -58,18 +60,22 @@ impl<C> EthPubSubClient<C> {
 		let heads_subscribers = Arc::new(RwLock::new(Subscribers::default()));
 		let logs_subscribers = Arc::new(RwLock::new(Subscribers::default()));
 		let transactions_subscribers = Arc::new(RwLock::new(Subscribers::default()));
+		let works_subscribers = Arc::new(RwLock::new(Subscribers::default()));
 
 		EthPubSubClient {
 			handler: Arc::new(ChainNotificationHandler {
 				client,
 				executor,
+				seed_compute: Mutex::new(ethash::SeedHashCompute::default()),
 				heads_subscribers: heads_subscribers.clone(),
 				logs_subscribers: logs_subscribers.clone(),
 				transactions_subscribers: transactions_subscribers.clone(),
+				works_subscribers: works_subscribers.clone(),
 			}),
 			heads_subscribers,
 			logs_subscribers,
 			transactions_subscribers,
+			works_subscribers,
 		}
 	}
 
@@ -118,9 +124,11 @@ where
 pub struct ChainNotificationHandler<C> {
 	client: Arc<C>,
 	executor: Executor,
+	seed_compute: Mutex<ethash::SeedHashCompute>,
 	heads_subscribers: Arc<RwLock<Subscribers<Client>>>,
 	logs_subscribers: Arc<RwLock<Subscribers<(Client, EthFilter)>>>,
 	transactions_subscribers: Arc<RwLock<Subscribers<Client>>>,
+	works_subscribers: Arc<RwLock<Subscribers<Client>>>,
 }
 
 impl<C> ChainNotificationHandler<C> {
@@ -182,6 +190,13 @@ impl<C> ChainNotificationHandler<C> {
 			for hash in hashes {
 				Self::notify(&self.executor, subscriber, pubsub::Result::TransactionHash(*hash));
 			}
+		}
+	}
+
+	/// Notfiy all subscribers about new mining work
+	pub fn notify_work(&self, pow_hash: H256, seed_hash: H256, target: H256, number: u64, parent_hash: H256, gas_limit: u64, gas_used: u64, uncles:usize, transactions: usize, encoded: &Vec<u8>) {
+		for subscriber in self.works_subscribers.read().values() {
+			Self::notify(&self.executor, subscriber, pubsub::Result::Work((pow_hash, seed_hash, target, number, parent_hash, gas_limit, gas_used, uncles, transactions, encoded.clone())))
 		}
 	}
 }
@@ -259,6 +274,14 @@ impl<C: BlockChainClient> ChainNotify for ChainNotificationHandler<C> {
 	}
 }
 
+impl<C: Send + Sync> NotifyWork for ChainNotificationHandler<C> {
+	fn notify(&self, pow_hash: H256, difficulty: U256, number: u64, parent_hash: H256, gas_limit: u64, gas_used: u64, uncles:usize, transactions: usize, encoded: &Vec<u8>) {
+		let target = ethash::difficulty_to_boundary(&difficulty);
+		let seed_hash = &self.seed_compute.lock().hash_block_number(number);
+		let seed_hash = H256::from_slice(&seed_hash[..]);
+	}
+}
+
 impl<C: Send + Sync + 'static> EthPubSub for EthPubSubClient<C> {
 	type Metadata = Metadata;
 
@@ -296,6 +319,13 @@ impl<C: Send + Sync + 'static> EthPubSub for EthPubSubClient<C> {
 			(pubsub::Kind::NewPendingTransactions, _) => {
 				errors::invalid_params("newPendingTransactions", "Expected no parameters.")
 			},
+			(pubsub::Kind::NewWorks, None) => {
+				self.works_subscribers.write().push(subscriber);
+				return
+			},
+			(pubsub::Kind::NewWorks, _) => {
+				errors::invalid_params("newWorks", "Expected no parameters.")
+			},
 			_ => {
 				errors::unimplemented(None)
 			},
@@ -308,7 +338,8 @@ impl<C: Send + Sync + 'static> EthPubSub for EthPubSubClient<C> {
 		let res = self.heads_subscribers.write().remove(&id).is_some();
 		let res2 = self.logs_subscribers.write().remove(&id).is_some();
 		let res3 = self.transactions_subscribers.write().remove(&id).is_some();
+		let res4 = self.works_subscribers.write().remove(&id).is_some();
 
-		Ok(res || res2 || res3)
+		Ok(res || res2 || res3 || res4)
 	}
 }
