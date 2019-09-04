@@ -31,6 +31,8 @@ pub enum Result {
 	Log(Box<Log>),
 	/// Transaction hash
 	TransactionHash(H256),
+	/// New mining work
+	Work((H256, H256, H256, u64, H256, u64, u64, usize, usize, Vec<u8>)),
 }
 
 impl Serialize for Result {
@@ -41,6 +43,7 @@ impl Serialize for Result {
 			Result::Header(ref header) => header.serialize(serializer),
 			Result::Log(ref log) => log.serialize(serializer),
 			Result::TransactionHash(ref hash) => hash.serialize(serializer),
+			Result::Work(ref work) => work.serialize(serializer),
 		}
 	}
 }
@@ -58,6 +61,8 @@ pub enum Kind {
 	NewPendingTransactions,
 	/// Node syncing status subscription.
 	Syncing,
+	/// New mining works subscription.
+	NewWorks,
 }
 
 /// Subscription kind.
@@ -102,6 +107,7 @@ mod tests {
 		assert_eq!(serde_json::from_str::<Kind>(r#""logs""#).unwrap(), Kind::Logs);
 		assert_eq!(serde_json::from_str::<Kind>(r#""newPendingTransactions""#).unwrap(), Kind::NewPendingTransactions);
 		assert_eq!(serde_json::from_str::<Kind>(r#""syncing""#).unwrap(), Kind::Syncing);
+		assert_eq!(serde_json::from_str::<Kind>(r#""newWorks""#).unwrap(), Kind::NewWorks);
 	}
 
 	#[test]
