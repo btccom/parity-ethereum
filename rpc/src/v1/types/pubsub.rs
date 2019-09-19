@@ -20,7 +20,7 @@ use ethereum_types::H256;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 use serde_json::{Value, from_value};
-use v1::types::{RichHeader, Filter, Log};
+use v1::types::{RichHeader, Filter, Log, Work};
 
 /// Subscription result.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -32,7 +32,7 @@ pub enum Result {
 	/// Transaction hash
 	TransactionHash(H256),
 	/// New mining work
-	Work((H256, H256, H256, u64, H256, u64, u64, usize, usize, Vec<u8>)),
+	Work(Box<Work>),
 }
 
 impl Serialize for Result {

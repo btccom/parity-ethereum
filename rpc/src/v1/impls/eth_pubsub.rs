@@ -27,7 +27,7 @@ use v1::helpers::{errors, limit_logs, Subscribers};
 use v1::helpers::light_fetch::LightFetch;
 use v1::metadata::Metadata;
 use v1::traits::EthPubSub;
-use v1::types::{pubsub, RichHeader, Log};
+use v1::types::{pubsub, RichHeader, Log, Work};
 
 use ethcore::client::{BlockChainClient, ChainNotify, NewBlocks, ChainRouteType, BlockId};
 use ethereum_types::{H256, U256};
@@ -196,7 +196,18 @@ impl<C> ChainNotificationHandler<C> {
 	/// Notfiy all subscribers about new mining work
 	pub fn notify_work(&self, pow_hash: H256, seed_hash: H256, target: H256, number: u64, parent_hash: H256, gas_limit: u64, gas_used: u64, uncles:usize, transactions: usize, encoded: &Vec<u8>) {
 		for subscriber in self.works_subscribers.read().values() {
-			Self::notify(&self.executor, subscriber, pubsub::Result::Work((pow_hash, seed_hash, target, number, parent_hash, gas_limit, gas_used, uncles, transactions, encoded.clone())))
+			Self::notify(&self.executor, subscriber, pubsub::Result::Work(Box::new(Work {
+				pow_hash,
+				seed_hash,
+				target,
+				number: Some(number),
+				parent_hash,
+				gas_limit,
+				gas_used,
+				uncles,
+				transactions,
+				encoded: encoded.clone(),
+			})));
 		}
 	}
 }
