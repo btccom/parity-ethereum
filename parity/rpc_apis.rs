@@ -333,7 +333,8 @@ impl FullDependencies {
 							}));
 
 						if let Some(h) = client.handler().upgrade() {
-							self.client.add_notify(h);
+							self.client.add_notify(h.clone());
+							self.miner.add_work_listener(h);
 						}
 						handler.extend_with(client.to_delegate());
 					}

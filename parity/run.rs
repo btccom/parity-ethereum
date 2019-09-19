@@ -501,7 +501,7 @@ fn execute_impl<Cr, Rr>(cmd: RunCmd, logger: Arc<RotatingLogger>, on_client_rq: 
 	miner.set_extra_data(cmd.miner_extras.extra_data);
 
 	if !cmd.miner_extras.work_notify.is_empty() {
-		miner.add_work_listener(Box::new(
+		miner.add_work_listener(Arc::new(
 			WorkPoster::new(&cmd.miner_extras.work_notify, fetch.clone(), runtime.executor())
 		));
 	}
