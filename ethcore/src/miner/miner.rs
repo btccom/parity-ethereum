@@ -722,11 +722,11 @@ impl Miner {
 	/// Prepares work which has to be done to seal.
 	fn prepare_work(&self, block: ClosedBlock, original_work_hash: Option<H256>) {
 		let (work, is_new) = {
+			let block_hash = block.header.hash();
 			let mut block_header = block.header.clone();
 			let mut extra_data = block_header.extra_data().clone();
 			extra_data.extend_from_slice(&[0; 4]);
 			block_header.set_extra_data(extra_data);
-			let block_hash = block_header.hash();
 
 			let mut sealing = self.sealing.lock();
 			let last_work_hash = sealing.queue.peek_last_ref().map(|pb| pb.header.hash());
